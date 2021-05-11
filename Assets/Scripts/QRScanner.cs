@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AI;
 using ZXing;
 
 
@@ -15,19 +16,24 @@ public class QRScanner : MonoBehaviour
 {
     public GameObject calibrationPoints;    // objects with the transform of calibration points
     public GameObject player;               // player indicator
+    public GameObject walls;                // parent of wall objects
+    public GameObject mapUI;                // map UI to be hidden until first calibration
     public Text message;                    // message board
+    public NavMeshSurface surface;
 
     private bool searchingForMarker;        // bool to say if looking for marker
     private bool initialized;               // bool to say if the map was initializad with first calibration point
     private bool first;                     // bool to fix multiple scan findings
+    private bool isRelocating;
 
-    
+
     private void Start()
     {
         searchingForMarker = true;
         initialized = false;
         first = true;
-        player.SetActive(false);    // hide player indicator until the first calibration
+        isRelocating = false;
+        mapUI.SetActive(false);    // hide map UI indicator until the first calibration
         message.text = "Please scan QR code to start";
     }
 
@@ -69,14 +75,14 @@ public class QRScanner : MonoBehaviour
                     first = false;              // avoids relocating on every Update() to the same calibration point
                 }
             }
-            catch (NullReferenceException e)    //barcodeReader.Decode() throws NullReferenceException if no code was found
+            catch (NullReferenceException)    //barcodeReader.Decode() throws NullReferenceException if no code was found
             {
 #if DEBUG
                 message.text = "NullReference";
 #endif
                 first = true;                   // allows relocating next time it finds a qr code
             }
-            catch (Exception e)
+            catch (Exception)
             {
 #if DEBUG
                 message.text = "Unknown exception";
@@ -98,13 +104,20 @@ public class QRScanner : MonoBehaviour
         {
             if (child.name.Equals(text))
             {
+                isRelocating = true;
+
                 if (!initialized)
                 {
-                    player.SetActive(true);
+                    mapUI.SetActive(true);  // show map UI
                     initialized = true;
+                    surface.BuildNavMesh();
                 }
-                player.transform.position = child.position;
+
+                // player.transform.position = child.position; // doesn't work properly with Navmesh Agent
+                player.GetComponent<NavMeshAgent>().Warp( child.position );
+
                 message.text = "";
+                isRelocating = false;
             }
         }
     }
@@ -139,6 +152,11 @@ public class QRScanner : MonoBehaviour
 
             callback(imageByteArray, width, height);
         });
+    }
+
+    public bool IsRelocating()
+    {
+        return isRelocating;
     }
 
 }
