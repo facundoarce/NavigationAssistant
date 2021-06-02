@@ -9,6 +9,8 @@ public class PathFinder : MonoBehaviour
 {
     public Transform player;
     public GameObject calibrationPoints;
+    public GameObject arrowCollider;
+    public GameObject pinCollider;
     public Dropdown dropdown;
     public Text message;                    // message board
 
@@ -23,6 +25,8 @@ public class PathFinder : MonoBehaviour
         path = new NavMeshPath();
         line = GetComponent<LineRenderer>(); // get LineRenderer component on current object
         line.enabled = false;
+        arrowCollider.SetActive( false );
+        pinCollider.SetActive( false );
         destinations = new List<Transform>();
         Clear();
         dropdown.onValueChanged.AddListener( delegate {
@@ -56,6 +60,11 @@ public class PathFinder : MonoBehaviour
     private void SetTargetDestination (int index)
     {
         targetDestination = destinations[ index ];
+
+        arrowCollider.SetActive( true );
+        arrowCollider.transform.position = player.position;
+        pinCollider.SetActive( true );
+        pinCollider.transform.position = targetDestination.position;
     }
 
 
