@@ -52,7 +52,7 @@ public class PathFinder : MonoBehaviour
             line.positionCount = path.corners.Length;
             line.SetPositions( path.corners ); 
             line.enabled = true;
-            // message.text = string.Format( "PosCount {0}", line.positionCount );
+            message.text = string.Format( "PosCount {0}", line.positionCount );
         }
     }
 

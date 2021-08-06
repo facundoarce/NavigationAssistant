@@ -66,7 +66,7 @@ public class PlayerController : MonoBehaviour
 
             //message.text = string.Format( "{0} deg", Frame.Pose.rotation.eulerAngles.y ); // NOOOOOOOOOOOO
             //message.text = string.Format( "{0} deg", Input.compass.trueHeading ); // SIIIIIIIIIIIIIIII 
-            message.text = string.Format( "{0} / {1}", currHeading, Input.compass.headingAccuracy );
+            //message.text = string.Format( "{0} / {1}", currHeading, Input.compass.headingAccuracy );
         }
     }
 }
