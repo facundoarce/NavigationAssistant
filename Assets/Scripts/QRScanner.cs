@@ -16,10 +16,10 @@ public class QRScanner : MonoBehaviour
 {
     public GameObject calibrationPoints;    // objects with the transform of calibration points
     public GameObject player;               // player indicator
-    public GameObject walls;                // parent of wall objects
     public GameObject mapUI;                // map UI to be hidden until first calibration
     public Text message;                    // message board
     public NavMeshSurface surface;
+    public float deltaOrientation;
 
     private bool searchingForMarker;        // bool to say if looking for marker
     private bool initialized;               // bool to say if the map was initializad with first calibration point
@@ -34,6 +34,7 @@ public class QRScanner : MonoBehaviour
         first = true;
         isRelocating = false;
         mapUI.SetActive(false);    // hide map UI indicator until the first calibration
+        deltaOrientation = 0.0f;
         message.text = "Please scan QR code to start";
     }
 
@@ -115,6 +116,9 @@ public class QRScanner : MonoBehaviour
 
                 // player.transform.position = child.position; // doesn't work properly with Navmesh Agent
                 player.GetComponent<NavMeshAgent>().Warp( child.position );
+                //player.transform.rotation = child.rotation;
+                //deltaOrientation = Mathf.DeltaAngle( deltaOrientation, Mathf.DeltaAngle( Frame.Pose.rotation.eulerAngles.y, child.localRotation.eulerAngles.y ) );
+                deltaOrientation = Mathf.DeltaAngle( Frame.Pose.rotation.eulerAngles.y, child.localRotation.eulerAngles.y );
 
                 message.text = "";
                 isRelocating = false;
