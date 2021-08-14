@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
 {
     public GameObject player;
     public GameObject auxiliar;
+    public GameObject arrow;
     public QRScanner qrScanner; // Needed to prevent moving while relocating
     public Text message;
 
@@ -76,6 +77,7 @@ public class PlayerController : MonoBehaviour
             player.transform.Translate( x, 0.0f, z );
 
             
+            arrow.transform.localRotation = Quaternion.Euler( new Vector3( 0, currHeading, 0 ) );
             auxiliar.transform.RotateAround( player.transform.position, new Vector3( 0, 0, 1 ), deltaHeading ); //public void RotateAround(Vector3 point, Vector3 axis, float angle);
 
             //message.text = string.Format( "{0} deg", Frame.Pose.rotation.eulerAngles.y ); // NOOOOOOOOOOOO
