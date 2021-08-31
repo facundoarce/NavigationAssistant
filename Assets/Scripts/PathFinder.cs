@@ -78,6 +78,20 @@ public class PathFinder : MonoBehaviour
         dropdown.AddOptions( names );
     }
 
+    private void PopulateMapLabels()
+    {
+        //List<Text> names = new List<Text>();
+        //foreach ( Transform dest in destinations )
+        //{
+        //    Text text = new Text( dest.name );
+        //    text.transform = dest;
+        //    text.font = ArialFont;
+        //    text.fontSize = 11;
+
+        //    names.Add( text );
+        //}
+    }
+
 
     private void DropdownIndexChanged()
     {
