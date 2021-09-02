@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions; // for Regex
 using UnityEngine;
 using UnityEngine.UI;
 using TechTweaking.Bluetooth;
@@ -60,6 +61,18 @@ public class MapDownloadMenu : MonoBehaviour
     private Text message;
 
     /// <summary>
+    /// Parent transform for calibration coordinates.
+    /// </summary>
+    [SerializeField]
+    private Transform parent;
+
+    /// <summary>
+    /// Path finder script to populate dropdown list with calibration coordinates.
+    /// </summary>
+    [SerializeField]
+    private PathFinder pathFinder;
+
+    /// <summary>
     /// Bluetooth device object that download the map from.
     /// </summary>
     private BluetoothDevice device;
@@ -80,6 +93,8 @@ public class MapDownloadMenu : MonoBehaviour
 
         BluetoothAdapter.OnDeviceOFF += HandleOnDeviceOff;
         BluetoothAdapter.OnDevicePicked += HandleOnDevicePicked; //To get what device the user picked out of the devices list
+
+        message.text = "Please download map\nClick on settings button";
     }
     
     //############### UI BUTTONS RELATED METHODS #####################
@@ -111,7 +126,7 @@ public class MapDownloadMenu : MonoBehaviour
         _mapDownloadMenuUi.SetActive( false );
 
         connect();
-        StartCoroutine( waitUntilReady() );
+        StartCoroutine( getCalibrationPoints() );
         //StartCoroutine( waitUntilDone() );
         //parser();
     }
@@ -181,73 +196,106 @@ public class MapDownloadMenu : MonoBehaviour
         }
     }
 
-    IEnumerator waitUntilReady()
+    IEnumerator getCalibrationPoints()
     {
-        yield return new WaitForSeconds( 10.0f );
-        send( "Hello" );
+        yield return new WaitForSeconds( 3.0f );
+        send( "Trying" );
         do
         {
-            //send( "Hello" );
-            yield return new WaitForSeconds( 10.0f );
+            send( "Hello" );
+            yield return new WaitForSeconds( 2.0f );
         } while ( !_processText.text.Contains( "Done" ) );
 
-        //} while ( !_processText.text.Contains( "Ready" ) );
-
-        ////////////////////
-
-        //while ( !_processText.text.Contains( "Done" ) )
-        //{
-        //    yield return null;
-        //}
 
         ///////////////////////
-        
-        //string input = "bdso fid ofdja\ndsad ijsad\nReady\n[Salida;-1.29;-10.03]\n[Dormitorio 1;-0.38;-1.36]\nDone\n";
-        //string input = _processText.text;
-        //send( input );
-        string pattern1 = @"\[([^\[\]]+)\]";  // Separate calibration points from rest of message   //@"\[([^\[\]]+)\]";    //@"[^,;\[\]\n]+";
-        string pattern2 = @"[^,;\[\]\n\r]+";  // Split each calibration point into name and coordinates  \\ @"[^,;\[\]\n\r]+"
 
-        foreach ( System.Text.RegularExpressions.Match m1 in System.Text.RegularExpressions.Regex.Matches( _processText.text, pattern1 ) )
+        // Clean all calibration points
+        //foreach ( Transform child in parent )
+        //{
+        //    Destroy( child.gameObject );
+        //}
+
+        List<GameObject> children = new List<GameObject>();
+        foreach ( Transform child in parent ) children.Add( child.gameObject );
+        children.ForEach( child => Destroy( child ) );
+
+
+        string pattern1 = @"\[([^\[\]]+)\]";  // Separate calibration points from rest of message
+        string pattern2 = @"[^,;\[\]\n\r]+";  // Split each calibration point into name and coordinates
+
+        foreach ( Match m1 in Regex.Matches( _processText.text, pattern1 ) )
         {
-            foreach ( System.Text.RegularExpressions.Match m2 in System.Text.RegularExpressions.Regex.Matches( m1.Groups[ 0 ].Value, pattern2 ) )
+            Match mName = Regex.Match( m1.Groups[ 0 ].Value, pattern2 );
+            Match mX = mName.NextMatch();
+            Match mZ = mX.NextMatch();
+            Match mRY = mZ.NextMatch();
+
+            // Check if point is repeated
+            bool isNameRepeated = false;
+            foreach ( Transform child in parent )
             {
-                message.text += m2.Groups[ 0 ].Value + " | ";
+                isNameRepeated |= child.gameObject.name == mName.Groups[ 0 ].Value;
             }
-        }
-    }
 
-    IEnumerator waitUntilDone()
-    {
-        while ( !_processText.text.Contains( "Done" ) )
-        {
-            yield return null;
-        }
-    }
-
-    void parser()
-    {
-        //string[] expressions = _processText.text.Split( new[] { "Ready\n", "Done\n" } ); // separate calibration points from rest of message
-        //expressions = expressions[1].text.Split(";\n"); // split in each calib point
-
-        //string pattern = @"\d*\.\d*";
-
-        string input = "bdso fid ofdja\ndsad ijsad\nReady\n[Salida;-1.29;-10.03]\n[Dormitorio 1;-0.38;-1.36]\nDone\n";
-        //string input = _processText.text; // "bdso fid ofdja\ndsad ijsad\nReady\n[Salida;-1.29;-10.03]\n[Dormitorio 1;-0.38;-1.36]\nDone\n";
-        send( input );
-        string pattern1 = @"\[([^\[\]]+)\]";  // Separate calibration points from rest of message   //@"\[([^\[\]]+)\]";    //@"[^,;\[\]\n]+";
-        string pattern2 = @"[^,;\[\]\n\r]+";  // Split each calibration point into name and coordinates  \\ @"[^,;\[\]\n\r]+"
-
-        foreach ( System.Text.RegularExpressions.Match m1 in System.Text.RegularExpressions.Regex.Matches( input, pattern1 ) )
-        {
-            foreach ( System.Text.RegularExpressions.Match m2 in System.Text.RegularExpressions.Regex.Matches( m1.Groups[ 0 ].Value, pattern2 ) )
+            if ( !isNameRepeated )
             {
-                message.text += m2.Groups[ 0 ].Value + "-";
+                GameObject calibPoint = new GameObject( mName.Groups[ 0 ].Value );
+                calibPoint.transform.parent = parent;
+                calibPoint.transform.name = mName.Groups[ 0 ].Value;
+                calibPoint.transform.localPosition = new Vector3( float.Parse( mX.Groups[ 0 ].Value ), 0.0f, float.Parse( mZ.Groups[ 0 ].Value ) );
+                calibPoint.transform.localEulerAngles = new Vector3( 0.0f, float.Parse( mRY.Groups[ 0 ].Value ), 0.0f );
             }
+
+            //foreach ( Transform child in parent )
+            //{
+            //    Something( child.gameObject );
+            //}
+
+            
+
+            //calibPoint.name = mName.Groups[0 ].Value;
+
+            //foreach ( System.Text.RegularExpressions.Match m2 in System.Text.RegularExpressions.Regex.Matches( m1.Groups[ 0 ].Value, pattern2 ) )
+            //{
+            //    message.text += m2.Groups[ 0 ].Value + " | ";
+            //}
         }
 
-        //string[] lines = content.Split( new char[] { '\n', '\r' } );
+        pathFinder.Clear(); // populate dropdown with calibration points
+        message.text = "Please scan QR code to start";
     }
+
+    //IEnumerator waitUntilDone()
+    //{
+    //    while ( !_processText.text.Contains( "Done" ) )
+    //    {
+    //        yield return null;
+    //    }
+    //}
+
+    //void parser()
+    //{
+    //    //string[] expressions = _processText.text.Split( new[] { "Ready\n", "Done\n" } ); // separate calibration points from rest of message
+    //    //expressions = expressions[1].text.Split(";\n"); // split in each calib point
+
+    //    //string pattern = @"\d*\.\d*";
+
+    //    string input = "bdso fid ofdja\ndsad ijsad\nReady\n[Salida;-1.29;-10.03]\n[Dormitorio 1;-0.38;-1.36]\nDone\n";
+    //    //string input = _processText.text; // "bdso fid ofdja\ndsad ijsad\nReady\n[Salida;-1.29;-10.03]\n[Dormitorio 1;-0.38;-1.36]\nDone\n";
+    //    send( input );
+    //    string pattern1 = @"\[([^\[\]]+)\]";  // Separate calibration points from rest of message   //@"\[([^\[\]]+)\]";    //@"[^,;\[\]\n]+";
+    //    string pattern2 = @"[^,;\[\]\n\r]+";  // Split each calibration point into name and coordinates  \\ @"[^,;\[\]\n\r]+"
+
+    //    foreach ( System.Text.RegularExpressions.Match m1 in System.Text.RegularExpressions.Regex.Matches( input, pattern1 ) )
+    //    {
+    //        foreach ( System.Text.RegularExpressions.Match m2 in System.Text.RegularExpressions.Regex.Matches( m1.Groups[ 0 ].Value, pattern2 ) )
+    //        {
+    //            message.text += m2.Groups[ 0 ].Value + "-";
+    //        }
+    //    }
+
+    //    //string[] lines = content.Split( new char[] { '\n', '\r' } );
+    //}
 
 
     /// <summary>
@@ -266,7 +314,6 @@ public class MapDownloadMenu : MonoBehaviour
     {
         if ( device != null && !string.IsNullOrEmpty( msg ) )
         {
-            //message.text = "send()";
             device.send( System.Text.Encoding.ASCII.GetBytes( msg ) );
         }
     }
@@ -286,7 +333,10 @@ public class MapDownloadMenu : MonoBehaviour
 
                 //converting byte array to string.
                 //string content = System.Text.ASCIIEncoding.ASCII.GetString( msg );
-                string content = System.Text.ASCIIEncoding.ASCII.GetString( msg );
+
+
+                //string content = System.Text.ASCIIEncoding.ASCII.GetString( msg );
+                string content = System.Text.Encoding.UTF8.GetString( msg );
 
                 //here we split the string into lines. '\n','\r' are charachter used to represent new line.
                 string[] lines = content.Split( new char[] { '\n', '\r' } );

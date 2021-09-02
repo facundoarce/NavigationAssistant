@@ -35,7 +35,7 @@ public class QRScanner : MonoBehaviour
         isRelocating = false;
         mapUI.SetActive(false);    // hide map UI indicator until the first calibration
         deltaOrientation = 0.0f;
-        message.text = "Please scan QR code to start";
+        // message.text = "Please scan QR code to start"; // moved to MapDownloadMenu
     }
 
 
@@ -99,11 +99,13 @@ public class QRScanner : MonoBehaviour
     private void Relocate(string text)
     {
         text = text.Trim(); //remove spaces
+        //message.text = text;
 
         //Find the correct calibration point scanned and move the player to that position
         foreach (Transform child in calibrationPoints.transform)
         {
-            if (child.name.Equals(text))
+            //message.text = child?.name;
+            if ( child.name == text )
             {
                 isRelocating = true;
 

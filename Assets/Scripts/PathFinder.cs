@@ -29,6 +29,7 @@ public class PathFinder : MonoBehaviour
         pinCollider.SetActive( false );
         destinations = new List<Transform>();
         Clear();
+        dropdown.interactable = false;
         dropdown.onValueChanged.AddListener( delegate {
             DropdownIndexChanged();
         } );
@@ -70,6 +71,7 @@ public class PathFinder : MonoBehaviour
 
     private void PopulateDropdown()
     {
+        dropdown.ClearOptions();
         List<string> names = new List<string>();
         foreach(Transform dest in destinations)
         {
@@ -105,12 +107,13 @@ public class PathFinder : MonoBehaviour
         targetDestination = null;
         line.positionCount = 0;
 
+        destinations.Clear();
         foreach ( Transform child in calibrationPoints.transform )
         {
             destinations.Add( child );
         }
 
-        dropdown.ClearOptions();
         PopulateDropdown();
+        dropdown.interactable = true;
     }
 }
