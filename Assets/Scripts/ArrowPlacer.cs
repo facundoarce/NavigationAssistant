@@ -16,26 +16,31 @@ public class ArrowPlacer : MonoBehaviour
     public GameObject pinPrefab;
     public Transform auxPos;
 
-    private bool hasEntered;
-    private bool hasExited;
+    private bool hasEnteredPinCollider;
+    //private bool hasExited;
     private Vector2 currPos;
-    private Vector2 prevPos;
+    //private Vector2 prevPos;
 
-    private GameObject spawned;
-    private Anchor anchor;
+    private GameObject spawnedArrow;
+    private GameObject spawnedPin;
+    private Anchor anchorArrow;
+    private Anchor anchorPin;
 
     void Start()
     {
-        hasEntered = false;
-        hasExited = false;
+        //hasEntered = false;
+        //hasExited = false;
+
+        hasEnteredPinCollider = false;
         currPos = new Vector2( this.transform.position.x, this.transform.position.z );
-        prevPos = currPos;
+        //prevPos = currPos;
     }
 
     void Update()
     {
-        hasEntered = false;
-        hasExited = false;
+        //hasEntered = false;
+        //hasExited = false;
+
         //prevPos = currPos;
         //currPos.Set( this.transform.position.x, this.transform.position.z );
     }
@@ -44,24 +49,24 @@ public class ArrowPlacer : MonoBehaviour
     // private void OnTriggerEnter( Collider collider )
     private void OnTriggerEnter( Collider collider )
     {
-        if ( line.positionCount > 0 )
+        if ( collider.tag.Equals( "Arrow" ) && !hasEnteredPinCollider ) 
         {
-            if ( collider.tag.Equals( "Arrow" ) )
+            if ( line.positionCount > 0 )
             {
-                prevPos = currPos;
+                //prevPos = currPos;
                 //currPos.Set( this.transform.position.x, this.transform.position.z );
                 currPos.Set( this.transform.position.x, this.transform.position.y );
 
-                message.text = "Entered arrow collider";
+                //message.text = "Entered arrow collider";
 
                 // Position arrow a bit before the camera and a bit up
                 Vector3 pos = arcoreCamera.transform.position + arcoreCamera.transform.forward * 2.0f + arcoreCamera.transform.up * 0.5f;
                 // Rotate arrow to neutral orientation
                 Quaternion rot = arcoreCamera.transform.rotation * Quaternion.Euler( 45, 180, 0 );
                 // Create new anchor
-                anchor = Session.CreateAnchor( new Pose( pos, rot ) );
+                anchorArrow = Session.CreateAnchor( new Pose( pos, rot ) );
                 //Spawn arrow
-                spawned = GameObject.Instantiate( arrowPrefab, anchor.transform.position, anchor.transform.rotation, anchor.transform );
+                spawnedArrow = GameObject.Instantiate( arrowPrefab, anchorArrow.transform.position, anchorArrow.transform.rotation, anchorArrow.transform );
 
                 // Calculate arrow angle
                 Vector3 pathNodeAux = line.GetPosition( 1 );
@@ -94,19 +99,28 @@ public class ArrowPlacer : MonoBehaviour
                 //float angle = Mathf.Rad2Deg * ( Mathf.Atan2( Vector2.Distance( pathNode, currPos ), Vector2.Distance( prevPos, currPos ) ) );
 
                 // Apply calculated angle
-                spawned.transform.Rotate( 0, angle, 0, Space.Self );
+                spawnedArrow.transform.Rotate( 0, angle, 0, Space.Self );
 
-                message.text = string.Format("Angle {0} deg", angle );
+                //message.text = string.Format("Angle {0} deg", angle );
             }
-            else if ( collider.tag.Equals( "Pin" ) )
-            {
-                message.text = "Entered pin collider";
-            }
-            else
-            {
-                //message.text = string.Format( "Entered {0} collider", collider.name );
-                return;
-            }
+        }
+        else if ( collider.tag.Equals( "Pin" ) )
+        {
+            //message.text = "Entered pin collider";
+
+            // Position arrow a bit before the camera and a bit up
+            Vector3 pos = arcoreCamera.transform.position + arcoreCamera.transform.forward * 3.0f + arcoreCamera.transform.up * 0.5f;
+            // Rotation
+            Quaternion rot = arcoreCamera.transform.rotation * Quaternion.Euler( 0, 0, 0 );
+            // Create new anchor
+            anchorPin = Session.CreateAnchor( new Pose( pos, rot ) );
+            //anchorPin = Session.CreateAnchor( new Pose( pinCollider.transform.position, pinCollider.transform.rotation ) );
+            //Spawn pin
+            spawnedPin = GameObject.Instantiate( pinPrefab, anchorPin.transform.position, anchorPin.transform.rotation, anchorPin.transform );
+
+            hasEnteredPinCollider = true;
+            Destroy( spawnedArrow );
+            Destroy( anchorArrow );
         }
     }
 
@@ -146,20 +160,23 @@ public class ArrowPlacer : MonoBehaviour
 
     private void OnTriggerExit( Collider collider )
     {
-        if ( collider.tag.Equals( "Arrow" ) )
+        if ( collider.tag.Equals( "Pin" ) )
+        {
+            //message.text = "Exit pin collider";
+            Destroy( spawnedPin );
+            Destroy( anchorPin );
+            hasEnteredPinCollider = false;
+        }
+        else if ( collider.tag.Equals( "Arrow" ) )
         {
             //message.text = "Exit arrow collider";
             arrowCollider.transform.position = this.transform.position;
-            Destroy( spawned );
-            Destroy( anchor );
-        }
-        else if ( collider.tag.Equals( "Pin" ) )
-        {
-            message.text = "Exit pin collider";
+            Destroy( spawnedArrow );
+            Destroy( anchorArrow );
         }
         else
         {
-            message.text = string.Format( "Exit {0} collider", collider.name );
+            //message.text = string.Format( "Exit {0} collider", collider.name );
         }
     }
 
