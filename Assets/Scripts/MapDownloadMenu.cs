@@ -4,6 +4,8 @@ using System.Text.RegularExpressions; // for Regex
 using UnityEngine;
 using UnityEngine.UI;
 using TechTweaking.Bluetooth;
+using TMPro;
+using System;
 
 public class MapDownloadMenu : MonoBehaviour
 {
@@ -65,6 +67,18 @@ public class MapDownloadMenu : MonoBehaviour
     /// </summary>
     [SerializeField]
     private Transform parent;
+
+    /// <summary>
+    /// Parent transform for calibration coordinates labes.
+    /// </summary>
+    [SerializeField]
+    private Transform labelParent;
+
+    /// <summary>
+    /// TextMeshPro Prefab for calibration coordinates labes.
+    /// </summary>
+    [SerializeField]
+    private GameObject labelPrefab;
 
     /// <summary>
     /// Path finder script to populate dropdown list with calibration coordinates.
@@ -244,6 +258,25 @@ public class MapDownloadMenu : MonoBehaviour
                 calibPoint.transform.name = mName.Groups[ 0 ].Value;
                 calibPoint.transform.localPosition = new Vector3( float.Parse( mX.Groups[ 0 ].Value ), 0.0f, float.Parse( mZ.Groups[ 0 ].Value ) );
                 calibPoint.transform.localEulerAngles = new Vector3( 0.0f, float.Parse( mRY.Groups[ 0 ].Value ), 0.0f );
+
+
+                GameObject label = GameObject.Instantiate( labelPrefab, labelParent );
+                label.transform.localPosition += calibPoint.transform.localPosition;
+                //label.transform.localPosition.y = 0.1f; // so it doesn't blend with the floor
+                label.GetComponent<TextMeshPro>().SetText( calibPoint.transform.name );
+
+                //try
+                //{
+                //    GameObject label = GameObject.Instantiate( labelPrefab, labelParent );
+                //    label.transform.position = calibPoint.transform.position;
+                //    label.transform.localPosition.y = 0.1f;
+                //    label.GetComponent<TextMeshPro>().SetText( calibPoint.transform.name );
+                //}
+                //catch( Exception ex )
+                //{
+                //    message.text = ex.GetType().FullName;
+                //}
+                
             }
 
             //foreach ( Transform child in parent )
