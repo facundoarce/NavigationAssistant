@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using GoogleARCore.Examples.Common; // for DepthMenu
 
 public class SettingsController : MonoBehaviour
 {
@@ -25,6 +26,26 @@ public class SettingsController : MonoBehaviour
     /// </summary>
     [SerializeField]
     private Button _settingButton = null;
+
+    [Header( "Depth" )]
+
+    /// <summary>
+    /// Depth menu UI.
+    /// </summary>
+    [SerializeField]
+    private GameObject _depthMenuUi = null;
+
+    /// <summary>
+    /// The button to open depth menu.
+    /// </summary>
+    [SerializeField]
+    private Button _depthButton = null;
+
+    /// <summary>
+    /// The component to control depth menu.
+    /// </summary>
+    [SerializeField]
+    private DepthMenu _depthMenu = null;
 
     [Header( "Map Download" )]
 
@@ -57,6 +78,9 @@ public class SettingsController : MonoBehaviour
 
         _mapDownloadMenuUi.SetActive( false );
         _mapDownloadButton.onClick.AddListener( OnMapDownloadClick );
+
+        _depthMenuUi.SetActive( false );
+        _depthButton.onClick.AddListener( OnDepthClick );
     }
 
 
@@ -88,6 +112,15 @@ public class SettingsController : MonoBehaviour
     }
 
     /// <summary>
+    /// Callback event for opening map download menu.
+    /// </summary>
+    void OnDepthClick()
+    {
+        _depthMenuUi.SetActive( true );
+        _depthMenu.OnMenuButtonClicked();
+    }
+
+    /// <summary>
     /// Callback event for closing the setting menu.
     /// </summary>
     public void OnMenuClosed()
@@ -95,5 +128,6 @@ public class SettingsController : MonoBehaviour
         _settingsWindows.SetActive( false );
         _settingMenuUi.SetActive( false );
         _mapDownloadMenuUi.SetActive( false );
+        _depthMenuUi.SetActive( false );
     }
 }
