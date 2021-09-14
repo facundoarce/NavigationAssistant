@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AI; // for NavMeshAgent
 using GoogleARCore.Examples.Common; // for DepthMenu
 
 public class SettingsController : MonoBehaviour
@@ -67,6 +68,19 @@ public class SettingsController : MonoBehaviour
     [SerializeField]
     private MapDownloadMenu _mapDownloadMenu = null;
 
+    [Header( "Enable Wall Collisions" )]
+
+    /// <summary>
+    /// The toggle to enable wall collisions.
+    /// </summary>
+    [SerializeField]
+    private Toggle _enableCollisionsToggle = null;
+
+    /// <summary>
+    /// The toggle to enable wall collisions.
+    /// </summary>
+    [SerializeField]
+    private GameObject _player = null;
 
 
     // Start is called before the first frame update
@@ -81,6 +95,10 @@ public class SettingsController : MonoBehaviour
 
         _depthMenuUi.SetActive( false );
         _depthButton.onClick.AddListener( OnDepthClick );
+
+        _enableCollisionsToggle.isOn = false;
+        _player.GetComponent<NavMeshAgent>().enabled = false;
+        _enableCollisionsToggle.onValueChanged.AddListener( delegate { OnCollisionsToggle(); } );
     }
 
 
@@ -118,6 +136,14 @@ public class SettingsController : MonoBehaviour
     {
         _depthMenuUi.SetActive( true );
         _depthMenu.OnMenuButtonClicked();
+    }
+
+    /// <summary>
+    /// Callback event for collisions toggle changing value.
+    /// </summary>
+    void OnCollisionsToggle()
+    {
+        _player.GetComponent<NavMeshAgent>().enabled = _enableCollisionsToggle.isOn;
     }
 
     /// <summary>
