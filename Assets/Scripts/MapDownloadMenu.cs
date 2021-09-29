@@ -103,8 +103,6 @@ public class MapDownloadMenu : MonoBehaviour
         _okButton.onClick.AddListener( OnOkButtonClicked );
         _applyButton.interactable = false;
 
-        //BluetoothAdapter.askEnableBluetooth();//Ask user to enable Bluetooth
-
         BluetoothAdapter.OnDeviceOFF += HandleOnDeviceOff;
         BluetoothAdapter.OnDevicePicked += HandleOnDevicePicked; //To get what device the user picked out of the devices list
 
@@ -118,7 +116,6 @@ public class MapDownloadMenu : MonoBehaviour
     /// </summary>
     public void OnMenuButtonClicked()
     {
-
     }
 
     /// <summary>
@@ -141,8 +138,6 @@ public class MapDownloadMenu : MonoBehaviour
 
         connect();
         StartCoroutine( getCalibrationPoints() );
-        //StartCoroutine( waitUntilDone() );
-        //parser();
     }
 
     /// <summary>
@@ -150,7 +145,6 @@ public class MapDownloadMenu : MonoBehaviour
     /// </summary>
     public void OnCancelButtonClicked()
     {
-        //_applyButton.interactable = false;
         _mapDownloadMenuUi.SetActive( false );
     }
 
@@ -220,20 +214,12 @@ public class MapDownloadMenu : MonoBehaviour
             yield return new WaitForSeconds( 2.0f );
         } while ( !_processText.text.Contains( "Done" ) );
 
-
-        ///////////////////////
-
         // Clean all calibration points
-        //foreach ( Transform child in parent )
-        //{
-        //    Destroy( child.gameObject );
-        //}
-
         List<GameObject> children = new List<GameObject>();
         foreach ( Transform child in parent ) children.Add( child.gameObject );
         children.ForEach( child => Destroy( child ) );
 
-
+        // Message parsing
         string pattern1 = @"\[([^\[\]]+)\]";  // Separate calibration points from rest of message
         string pattern2 = @"[^,;\[\]\n\r]+";  // Split each calibration point into name and coordinates
 
@@ -253,83 +239,23 @@ public class MapDownloadMenu : MonoBehaviour
 
             if ( !isNameRepeated )
             {
+                // Add calibration points
                 GameObject calibPoint = new GameObject( mName.Groups[ 0 ].Value );
                 calibPoint.transform.parent = parent;
                 calibPoint.transform.name = mName.Groups[ 0 ].Value;
                 calibPoint.transform.localPosition = new Vector3( float.Parse( mX.Groups[ 0 ].Value ), 0.0f, float.Parse( mZ.Groups[ 0 ].Value ) );
                 calibPoint.transform.localEulerAngles = new Vector3( 0.0f, float.Parse( mRY.Groups[ 0 ].Value ), 0.0f );
 
-
+                // Add labels in minimap
                 GameObject label = GameObject.Instantiate( labelPrefab, labelParent );
                 label.transform.localPosition += calibPoint.transform.localPosition;
-                //label.transform.localPosition.y = 0.1f; // so it doesn't blend with the floor
                 label.GetComponent<TextMeshPro>().SetText( calibPoint.transform.name );
-
-                //try
-                //{
-                //    GameObject label = GameObject.Instantiate( labelPrefab, labelParent );
-                //    label.transform.position = calibPoint.transform.position;
-                //    label.transform.localPosition.y = 0.1f;
-                //    label.GetComponent<TextMeshPro>().SetText( calibPoint.transform.name );
-                //}
-                //catch( Exception ex )
-                //{
-                //    message.text = ex.GetType().FullName;
-                //}
-                
             }
-
-            //foreach ( Transform child in parent )
-            //{
-            //    Something( child.gameObject );
-            //}
-
-            
-
-            //calibPoint.name = mName.Groups[0 ].Value;
-
-            //foreach ( System.Text.RegularExpressions.Match m2 in System.Text.RegularExpressions.Regex.Matches( m1.Groups[ 0 ].Value, pattern2 ) )
-            //{
-            //    message.text += m2.Groups[ 0 ].Value + " | ";
-            //}
         }
 
         pathFinder.Clear(); // populate dropdown with calibration points
         message.text = "Please scan QR code to start";
     }
-
-    //IEnumerator waitUntilDone()
-    //{
-    //    while ( !_processText.text.Contains( "Done" ) )
-    //    {
-    //        yield return null;
-    //    }
-    //}
-
-    //void parser()
-    //{
-    //    //string[] expressions = _processText.text.Split( new[] { "Ready\n", "Done\n" } ); // separate calibration points from rest of message
-    //    //expressions = expressions[1].text.Split(";\n"); // split in each calib point
-
-    //    //string pattern = @"\d*\.\d*";
-
-    //    string input = "bdso fid ofdja\ndsad ijsad\nReady\n[Salida;-1.29;-10.03]\n[Dormitorio 1;-0.38;-1.36]\nDone\n";
-    //    //string input = _processText.text; // "bdso fid ofdja\ndsad ijsad\nReady\n[Salida;-1.29;-10.03]\n[Dormitorio 1;-0.38;-1.36]\nDone\n";
-    //    send( input );
-    //    string pattern1 = @"\[([^\[\]]+)\]";  // Separate calibration points from rest of message   //@"\[([^\[\]]+)\]";    //@"[^,;\[\]\n]+";
-    //    string pattern2 = @"[^,;\[\]\n\r]+";  // Split each calibration point into name and coordinates  \\ @"[^,;\[\]\n\r]+"
-
-    //    foreach ( System.Text.RegularExpressions.Match m1 in System.Text.RegularExpressions.Regex.Matches( input, pattern1 ) )
-    //    {
-    //        foreach ( System.Text.RegularExpressions.Match m2 in System.Text.RegularExpressions.Regex.Matches( m1.Groups[ 0 ].Value, pattern2 ) )
-    //        {
-    //            message.text += m2.Groups[ 0 ].Value + "-";
-    //        }
-    //    }
-
-    //    //string[] lines = content.Split( new char[] { '\n', '\r' } );
-    //}
-
 
     /// <summary>
     /// Disconnect to bluetooth device
@@ -355,26 +281,18 @@ public class MapDownloadMenu : MonoBehaviour
     //Please note that you don't have to use Couroutienes, you can just put your code in the Update() method. Like what we did in the BasicDemo
     IEnumerator ManageConnection( BluetoothDevice device )
     {//Manage Reading Coroutine
-
         while ( device.IsReading )
         {
-
             byte[] msg = device.read();
-
             if ( msg != null )
             {
-
-                //converting byte array to string.
-                //string content = System.Text.ASCIIEncoding.ASCII.GetString( msg );
-
-
-                //string content = System.Text.ASCIIEncoding.ASCII.GetString( msg );
+                // Convert byte array to string.
                 string content = System.Text.Encoding.UTF8.GetString( msg );
 
-                //here we split the string into lines. '\n','\r' are charachter used to represent new line.
+                // Split the string into lines. '\n','\r' are charachter used to represent new line.
                 string[] lines = content.Split( new char[] { '\n', '\r' } );
 
-                //Add those lines to the processText
+                // Add those lines to the processText
                 _processText.text += content;
 
                 /* Note: You should notice the possiblity that at the time of calling read() a whole line has not yet completly recieved.
@@ -399,7 +317,4 @@ public class MapDownloadMenu : MonoBehaviour
         BluetoothAdapter.OnDevicePicked -= HandleOnDevicePicked;
         BluetoothAdapter.OnDeviceOFF -= HandleOnDeviceOff;
     }
-
-
-
 }

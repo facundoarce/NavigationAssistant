@@ -12,7 +12,7 @@ public class PathFinder : MonoBehaviour
     public GameObject arrowCollider;
     public GameObject pinCollider;
     public Dropdown dropdown;
-    public Text message;                    // message board
+    public Text message; // message board
 
     private NavMeshPath path;
     private LineRenderer line;
@@ -38,7 +38,6 @@ public class PathFinder : MonoBehaviour
 
     void Update()
     {
-        //message.text = string.Format( "Size dest {0}", destinations.Count );
         if (targetDestination != null)
         {
             try
@@ -53,7 +52,6 @@ public class PathFinder : MonoBehaviour
             line.positionCount = path.corners.Length;
             line.SetPositions( path.corners ); 
             line.enabled = true;
-            //message.text = string.Format( "PosCount {0}", line.positionCount );
         }
     }
 
@@ -79,25 +77,10 @@ public class PathFinder : MonoBehaviour
         }
         dropdown.AddOptions( names );
     }
-
-    private void PopulateMapLabels()
-    {
-        //List<Text> names = new List<Text>();
-        //foreach ( Transform dest in destinations )
-        //{
-        //    Text text = new Text( dest.name );
-        //    text.transform = dest;
-        //    text.font = ArialFont;
-        //    text.fontSize = 11;
-
-        //    names.Add( text );
-        //}
-    }
-
+    
 
     private void DropdownIndexChanged()
     {
-        // message.text = string.Format( "DropdownIndexChanged {0}", dropdown.value );
         SetTargetDestination( dropdown.value );
     }
 

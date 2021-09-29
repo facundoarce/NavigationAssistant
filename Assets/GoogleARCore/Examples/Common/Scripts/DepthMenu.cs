@@ -251,7 +251,7 @@ namespace GoogleARCore.Examples.Common
                 }
 
                 _depthConfigured = true;
-                //ApplyDepthState();
+                ApplyDepthState();
             }
 
             //_planeDiscoveryGuide.EnablePlaneDiscoveryGuide(false);

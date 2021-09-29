@@ -18,7 +18,6 @@ public class ZoomController : MonoBehaviour
 
     void Start()
     {
-        //cam = gameObject.GetComponent<Camera>();
         cam = GameObject.FindGameObjectWithTag( "PlayerCamera" ).GetComponent<Camera>();
     }
 
@@ -27,9 +26,7 @@ public class ZoomController : MonoBehaviour
         // mouse of fingertouch moves camera
         if ( Input.GetMouseButtonDown( 0 ) )
         {
-            //touchStart = cam.ScreenToWorldPoint( Input.mousePosition );
             touchStart = Input.mousePosition;
-            //message.text = string.Format( "({0},{1},{2})", touchStart.x, touchStart.y, touchStart.z );
         }
 
         // detect double tap
@@ -81,7 +78,6 @@ public class ZoomController : MonoBehaviour
             }
             if ( !selectingDest )
             {
-                //Vector3 direction = touchStart - cam.ScreenToWorldPoint( Input.mousePosition );
                 Vector3 direction = ( touchStart - Input.mousePosition ) / ( 0.1f * Screen.width );
                 direction = new Vector3( direction.x, 0, direction.y );
 

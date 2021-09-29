@@ -35,7 +35,6 @@ public class QRScanner : MonoBehaviour
         isRelocating = false;
         mapUI.SetActive(false);    // hide map UI indicator until the first calibration
         deltaOrientation = 0.0f;
-        // message.text = "Please scan QR code to start"; // moved to MapDownloadMenu
     }
 
 
@@ -76,7 +75,7 @@ public class QRScanner : MonoBehaviour
                     first = false;              // avoids relocating on every Update() to the same calibration point
                 }
             }
-            catch (NullReferenceException)    //barcodeReader.Decode() throws NullReferenceException if no code was found
+            catch (NullReferenceException)      //barcodeReader.Decode() throws NullReferenceException if no code was found
             {
 #if DEBUG
                 message.text = "NullReference";
@@ -99,12 +98,10 @@ public class QRScanner : MonoBehaviour
     private void Relocate(string text)
     {
         text = text.Trim(); //remove spaces
-        //message.text = text;
 
         //Find the correct calibration point scanned and move the player to that position
         foreach (Transform child in calibrationPoints.transform)
         {
-            //message.text = child?.name;
             if ( child.name == text )
             {
                 isRelocating = true;
@@ -116,10 +113,7 @@ public class QRScanner : MonoBehaviour
                     surface.BuildNavMesh();
                 }
 
-                // player.transform.position = child.position; // doesn't work properly with Navmesh Agent
                 player.GetComponent<NavMeshAgent>().Warp( child.position );
-                //player.transform.rotation = child.rotation;
-                //deltaOrientation = Mathf.DeltaAngle( deltaOrientation, Mathf.DeltaAngle( Frame.Pose.rotation.eulerAngles.y, child.localRotation.eulerAngles.y ) );
                 deltaOrientation = Mathf.DeltaAngle( Frame.Pose.rotation.eulerAngles.y, child.localRotation.eulerAngles.y );
 
                 message.text = "";

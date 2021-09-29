@@ -116,7 +116,6 @@ public class SettingsController : MonoBehaviour
             _settingsWindows.SetActive( true );
             _settingMenuUi.SetActive( true );
         }
-            
     }
 
     /// <summary>
@@ -124,7 +123,6 @@ public class SettingsController : MonoBehaviour
     /// </summary>
     void OnMapDownloadClick()
     {
-        //_settingMenuUi.SetActive( false );
         _mapDownloadMenuUi.SetActive( true );
         _mapDownloadMenu.OnMenuButtonClicked();
     }
