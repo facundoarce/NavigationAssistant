@@ -17,6 +17,8 @@ public class ArrowPlacer : MonoBehaviour
 
     private bool hasEnteredPinCollider;
     private Vector2 currPos;
+    private float prevAngle = 0.0f;
+    private bool first = true;  // first indication
 
     private GameObject spawnedArrow;
     private GameObject spawnedPin;
@@ -31,7 +33,7 @@ public class ArrowPlacer : MonoBehaviour
 
     private void OnTriggerEnter( Collider collider )
     {
-        if ( collider.tag.Equals( "Arrow" ) && !hasEnteredPinCollider ) 
+        if ( collider.tag.Equals( "Arrow" ) && !hasEnteredPinCollider )
         {
             if ( line.positionCount > 0 )
             {
@@ -54,6 +56,25 @@ public class ArrowPlacer : MonoBehaviour
 
                 float angle = Mathf.Rad2Deg * ( Mathf.Atan2( auxNode.y - currPos.y, auxNode.x - currPos.x ) - Mathf.Atan2( pathNode.y - currPos.y, pathNode.x - currPos.x ) );
                 spawnedArrow.transform.Rotate( 0, angle, 0, Space.Self );
+
+                // Play sound indication
+                angle = normalize( angle, -180, 180 );
+                if ( angle < -45 )
+                {
+                    if ( prevAngle > -45 || first ) FindObjectOfType<AudioManager>().Play( "izquierda" );
+                }
+                else if ( angle > 45 )
+                {
+                    if ( prevAngle < 45 || first ) FindObjectOfType<AudioManager>().Play( "derecha" );
+                }
+                else
+                {
+                    if ( prevAngle < -45 || prevAngle > 45 || first ) FindObjectOfType<AudioManager>().Play( "continue" );
+                }
+                first = false;
+
+                // Update previous angle
+                prevAngle = angle;
             }
         }
         else if ( collider.tag.Equals( "Pin" ) )
@@ -70,6 +91,9 @@ public class ArrowPlacer : MonoBehaviour
             hasEnteredPinCollider = true;
             Destroy( spawnedArrow );
             Destroy( anchorArrow );
+            first = true;
+            // Play sound indication
+            FindObjectOfType<AudioManager>().Play( "destino" );
         }
     }
 
@@ -87,6 +111,16 @@ public class ArrowPlacer : MonoBehaviour
             Destroy( spawnedArrow );
             Destroy( anchorArrow );
         }
+    }
+
+    // Normalizes any number to an arbitrary range 
+    // by assuming the range wraps around when going below min or above max 
+    private float normalize( float value, float start, float end ) 
+    {
+        float width = end - start;
+        float offsetValue = value - start;   // value relative to 0
+
+        return ((offsetValue - ( Mathf.Floor( offsetValue / width ) * width ) ) + start ); // + start to reset back to start of original range
     }
 
 
